@@ -66,11 +66,13 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 };
 
 #ifdef OLED_DRIVER_ENABLE
+#include <stdio.h>
+
 oled_rotation_t oled_init_user(oled_rotation_t rotation) {
-    if (!is_master) {
-        return OLED_ROTATION_180;  // flips the display 180 degrees if offhand
-    }
-    return rotation;
+  if (!is_keyboard_master()) {
+    return OLED_ROTATION_180;  // flips the display 180 degrees if offhand
+  }
+  return rotation;
 }
 
 #define L_BASE 0
@@ -111,17 +113,17 @@ const char code_to_name[60] = {
     '#', ';', '\'', '`', ',', '.', '/', ' ', ' ', ' '};
 
 void set_keylog(uint16_t keycode, keyrecord_t *record) {
-    char name = ' ';
+  char name = ' ';
     if ((keycode >= QK_MOD_TAP && keycode <= QK_MOD_TAP_MAX) ||
         (keycode >= QK_LAYER_TAP && keycode <= QK_LAYER_TAP_MAX)) { keycode = keycode & 0xFF; }
-    if (keycode < 60) {
-        name = code_to_name[keycode];
-    }
+  if (keycode < 60) {
+    name = code_to_name[keycode];
+  }
 
-    // update keylog
-    snprintf(keylog_str, sizeof(keylog_str), "%dx%d, k%2d : %c",
-            record->event.key.row, record->event.key.col,
-            keycode, name);
+  // update keylog
+  snprintf(keylog_str, sizeof(keylog_str), "%dx%d, k%2d : %c",
+           record->event.key.row, record->event.key.col,
+           keycode, name);
 }
 
 void oled_render_keylog(void) {
@@ -153,14 +155,14 @@ void oled_render_logo(void) {
 }
 
 void oled_task_user(void) {
-    if (is_master) {
+    if (is_keyboard_master()) {
         oled_render_layer_state();
         oled_render_keylog();
     } else {
         oled_render_logo();
     }
 }
-#endif  // OLED_DRIVER_ENABLE
+#endif // OLED_DRIVER_ENABLE
 
 
 /** キー処理のカスタマイズ **/
