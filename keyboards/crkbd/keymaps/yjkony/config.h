@@ -29,7 +29,11 @@ along with this program.  If not, see <http://www.gnu.org/licenses/>.
 #define USE_SERIAL_PD2
 
 #undef RGBLED_NUM
-#define RGBLIGHT_ANIMATIONS
+// #define RGBLIGHT_ANIMATIONS
+#define RGBLIGHT_EFFECT_TWINKLE
+#define RGBLIGHT_DEFAULT_HUE 100
+#define RGBLIGHT_DEFAULT_SAT 153
+#define RGBLIGHT_DEFAULT_VAL 68
 #define RGBLED_NUM 27
 #define RGBLIGHT_LIMIT_VAL 180
 #define RGBLIGHT_HUE_STEP 10

@@ -12,7 +12,9 @@ Copyright 2021 Yuji Konishi
 // カスタムキー処理
 enum custom_keycodes {
     FN_LNMO13 = SAFE_RANGE,
-    FN_MO23
+    FN_MO23,
+    FN_ESCGUI,
+    FN_ESCALT
 };
 
 const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
@@ -24,17 +26,17 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // |--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         KC_LSFT, KC_Z,    KC_X,    KC_C,    KC_V,    KC_B,                         KC_N,    KC_M,    KC_COMM, KC_DOT,  KC_SLSH, KC_BSPC,
     // |--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
-                                            KC_LALT, KC_LGUI, KC_SPC,     KC_ENT, FN_LNMO13, FN_MO23
+                                           FN_ESCALT,FN_ESCGUI,KC_SPC,    KC_ENT, FN_LNMO13,FN_MO23
     //                                     `--------------------------'  `--------------------------'
     ),
 
     [1] = LAYOUT_split_3x6_3(
     // ,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        KC_ESC,  KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,    KC_BSPC,
+        _______, KC_1,    KC_2,    KC_3,    KC_4,    KC_5,                         KC_6,    KC_7,    KC_8,    KC_9,    KC_0,   KC_MINS,
     // |--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                        KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,XXXXXXX, XXXXXXX,
+        _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                        KC_LEFT, KC_DOWN, KC_UP,   KC_RIGHT,KC_COLN, XXXXXXX,
     // |--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                       KC_F11,  KC_F12,  XXXXXXX, XXXXXXX, XXXXXXX, KC_BSPC,
+        _______, KC_F6,   KC_F7,   KC_F8,   KC_F9,   KC_F10,                       KC_F11,  KC_F12,  KC_COMM, KC_DOT,  KC_SLSH, KC_BSPC,
     // |--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,    _______, _______, _______
     //                                     `--------------------------'  `--------------------------'
@@ -42,7 +44,7 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
 
     [2] = LAYOUT_split_3x6_3(
     // ,-----------------------------------------------------.                    ,-----------------------------------------------------.
-        KC_ESC,  KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                      KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_BSPC,
+        _______, KC_EXLM, KC_AT,   KC_HASH, KC_DLR,  KC_PERC,                      KC_CIRC, KC_AMPR, KC_ASTR, KC_LPRN, KC_RPRN, KC_MINS,
     // |--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
         _______, KC_F1,   KC_F2,   KC_F3,   KC_F4,   KC_F5,                        KC_MINS, KC_EQL,  KC_LBRC, KC_RBRC, KC_BSLS, KC_GRV,
     // |--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
@@ -56,9 +58,9 @@ const uint16_t PROGMEM keymaps[][MATRIX_ROWS][MATRIX_COLS] = {
     // ,-----------------------------------------------------.                    ,-----------------------------------------------------.
         XXXXXXX, XXXXXXX, MKC_MUTE,MKC_SDUP,MKC_SDDW,XXXXXXX,                      XXXXXXX, XXXXXXX, XXXXXXX, DEBUG,   RESET,   EEP_RST,
     // |--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        XXXXXXX, RGB_TOG, RGB_HUI, RGB_SAI, RGB_VAI, XXXXXXX,                      RGB_M_P, RGB_MOD, RGB_SPI, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, RGB_TOG, RGB_HUI, RGB_SAI, RGB_VAI, XXXXXXX,                      XXXXXXX, RGB_M_P, XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     // |--------+--------+--------+--------+--------+--------|                    |--------+--------+--------+--------+--------+--------|
-        XXXXXXX, RGB_MOD, RGB_HUD, RGB_SAD, RGB_VAD, XXXXXXX,                      RGB_M_T, RGB_RMOD,RGB_SPD, XXXXXXX, XXXXXXX, XXXXXXX,
+        XXXXXXX, RGB_MOD, RGB_HUD, RGB_SAD, RGB_VAD, XXXXXXX,                      XXXXXXX, RGB_M_TW,XXXXXXX, XXXXXXX, XXXXXXX, XXXXXXX,
     // |--------+--------+--------+--------+--------+--------+--------|  |--------+--------+--------+--------+--------+--------+--------|
                                             _______, _______, _______,    _______, _______, _______
     //                                     `--------------------------'  `--------------------------'
@@ -166,8 +168,11 @@ void oled_task_user(void) {
 
 
 /** キー処理のカスタマイズ **/
+static bool lang_state = false;
 static bool lang_pressed = false;
 static uint16_t lang_pressed_time = 0;
+static bool esc_pressed = false;
+static uint16_t esc_pressed_time = 0;
 
 bool process_record_user(uint16_t keycode, keyrecord_t *record) {
     #ifdef OLED_DRIVER_ENABLE
@@ -189,7 +194,14 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
                 update_tri_layer(1, 2, 3);
 
                 if (lang_pressed && (TIMER_DIFF_16(record->event.time, lang_pressed_time) < TAPPING_TERM)) {
-                    tap_code16(LGUI(KC_SPC));
+                    if (lang_state) {
+                        tap_code16(KC_LANG2);
+                        lang_state = false;
+                    } else {
+                        tap_code16(KC_LANG1);
+                        lang_state = true;
+                    }
+                    // tap_code16(LGUI(KC_SPC));
                 }
                 lang_pressed = false;
             }
@@ -207,10 +219,39 @@ bool process_record_user(uint16_t keycode, keyrecord_t *record) {
             return false;
             break;
 
+        case FN_ESCGUI:
+            if (record->event.pressed) {
+                esc_pressed = true;
+                esc_pressed_time = record->event.time;
+                register_code(KC_LGUI);
+            } else {
+                unregister_code(KC_LGUI);
+                if (esc_pressed && (TIMER_DIFF_16(record->event.time, esc_pressed_time) < TAPPING_TERM)) {
+                    tap_code(KC_ESC);
+                }
+                esc_pressed = false;
+            }
+            return false;
+
+        case FN_ESCALT:
+            if (record->event.pressed) {
+                esc_pressed = true;
+                esc_pressed_time = record->event.time;
+                register_code(KC_LALT);
+            } else {
+                unregister_code(KC_LALT);
+                if (esc_pressed && (TIMER_DIFF_16(record->event.time, esc_pressed_time) < TAPPING_TERM)) {
+                    tap_code(KC_ESC);
+                }
+                esc_pressed = false;
+            }
+            return false;
+
         default:
             if (record->event.pressed) {
                 // reset the flags
                 lang_pressed = false;
+                esc_pressed = false;
             }
             break;
     }
